@@ -1,5 +1,6 @@
-import { StateSingleton, GenericDataStore, ArrayDataStore, StoreListener, Store, State, Executable, Action, StoreLoader } from "../lib"
+import { StateSingleton, GenericDataStore } from "../lib"
 import { ChangeState } from "../lib/core/Options"
+import { TestStore } from "../__mocks__/TestObserverStore"
 
 // For some longer running tests, we'll want more than 5 seconds
 jest.setTimeout(20000)
@@ -189,15 +190,15 @@ test('Chain Actions', async () => {
 })
 
 test('Remove Loader', () => {
-  const store = StateSingleton.findStore('testArrayStore') as ArrayDataStore<number>
+  const store = StateSingleton.findStore('testStore3') as GenericDataStore<number>
   expect(store).toBeDefined()
 
-  const result = store.removeLoader('arrayLoader')
+  const result = store.removeLoader('loader')
   expect(result).toBeTruthy()
 })
 
 test('Remove Action', () => {
-  const store = StateSingleton.findStore('testStore4') as ArrayDataStore<number>
+  const store = StateSingleton.findStore('testStore4') as GenericDataStore<number>
   expect(store).toBeDefined()
 
   const result = store.removeAction('action')
@@ -205,7 +206,7 @@ test('Remove Action', () => {
 })
 
 test('Remove Listener', () => {
-  const store = StateSingleton.findStore('testStore3') as ArrayDataStore<number>
+  const store = StateSingleton.findStore('testStore3') as GenericDataStore<number>
   expect(store).toBeDefined()
 
   const result = store.removeListener('listener')
@@ -213,7 +214,7 @@ test('Remove Listener', () => {
 })
 
 test('Remove Transformer', () => {
-  const store = StateSingleton.findStore('testStore3') as ArrayDataStore<number>
+  const store = StateSingleton.findStore('testStore3') as GenericDataStore<number>
   expect(store).toBeDefined()
 
   const result = store.removeListener('transformer')
@@ -243,4 +244,17 @@ test('Remove Store', () => {
 test('Clear Stores', () => {
   const result = StateSingleton.clearStores()
   expect(result).toBeTruthy()
+})
+
+test('Observable Store', async () => {
+  const observerClass = new TestStore()
+  const store = StateSingleton.findStore('employees')
+  let changes = 0
+  store?.createListener('changeCounter', () => {
+    changes++
+  })
+  expect(store).toBeDefined()
+
+  await observerClass.increaseWages(0.05)
+  expect(changes).toBe(3)
 })

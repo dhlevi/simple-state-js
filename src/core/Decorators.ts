@@ -141,6 +141,9 @@ export function StoreLoader (options: DecoratorOptions | null = null): Function 
   }
 }
 
+// ?? Need a decorator to explicity set a property in a class
+// ?? To not be observable
+
 function pushToPrototype(prototype: any, key: PropertyKey, def: DecoratorDefinition) {
   if (!Object.prototype.hasOwnProperty.call(prototype, DECORATOR_KEY)) {
       Object.defineProperty(prototype, DECORATOR_KEY, {
