@@ -2,7 +2,10 @@ import { Action, ActionType, Executable } from "./Action"
 import { StateSingleton } from "./StateSingleton"
 import { ChangeState, DecoratorDefinition, ExecutableOptions, StoreOptions } from "./Options"
 import { DECORATOR_KEY } from "./Decorators"
-import { deepClone, stringifyMapReplacer, stringifyMapReviver } from "./Util"
+import { deepClone, deepEquals, shallowClone, shallowEquals } from "./Util"
+
+// Tge prefix added to injected getters/setters
+const INJECT_PREFIX = '@state__'
 
 /**
  * A Base store class. Defines the standard set of attributes and 
@@ -29,12 +32,14 @@ export class Store {
   private _previousStateData: any
   private _data: any
 
+  private _isObservable: boolean
+
   /**
    * Create a Store for holding data
    * @param options
    * 
    */
-  public constructor (options: StoreOptions) {
+  public constructor (options: StoreOptions, isObservable = false) {
     this.name = options.name
     this.isCachable = options.isCachable || false
     this._isCached = false
@@ -46,6 +51,7 @@ export class Store {
     this._actions = []
     this._listeners = []
     this._transformers = []
+    this._isObservable = isObservable
 
     this._lastLoadTime = null
     this._lastStoreTime = null
@@ -91,7 +97,7 @@ export class Store {
   public static observableStore(targetObject: any, options: StoreOptions): Store {
     // should only be called in constructor, so lets remove an existing store
     StateSingleton.removeStore(options.name)
-    const store = new Store(options)
+    const store = new Store(options, true)
     StateSingleton.addStore(store)
     // inject actions onto target by scanning the prototypes
     try {
@@ -164,10 +170,25 @@ export class Store {
             this.injectMonitorSetters(obj, store)
           }
         }
+        // observe array changes
+        const me = this;
+        ['pop', 'push', 'shift', 'unshift', 'splice', 'concat'].forEach((m) => {
+          targetObject[key][m] = function () {
+            const startLength = targetObject[key].length
+            const res = Array.prototype[m as any].apply(targetObject[key], arguments)
+            const endLength = targetObject[key].length
+            if (startLength !== endLength) {
+              if (m !== 'pop' && m !== 'splice') {
+                me.injectMonitorSetters(arguments, store)
+              }
+              store.executeListeners()
+            }
+            return res
+        }})
       } else if (typeof targetObject[key] === 'object') {
         this.injectMonitorSetters(targetObject[key], store)
       } else if (typeof targetObject[key] !== 'function') {
-        const keyName = `@state__${key}`
+        const keyName = `${INJECT_PREFIX}${key}`
         targetObject[keyName] = targetObject[key]
         Object.defineProperty(targetObject, key, {
           get: () => { 
@@ -248,9 +269,9 @@ export class Store {
     // to make the states clear for explicit true/false states
   }
 
-  public getData (): any {
+  public getData (clone = false): any {
     // Return a deep copy, preserve data state?
-    return this._data
+    return clone ? deepClone(this._data) : this._data
   }
 
   public setData (data: any) {
@@ -282,11 +303,8 @@ export class Store {
    * was mutated directly
    * @returns 
    */
-  public isDirty () {
-    return (
-      // update to use deepEqual
-      JSON.stringify(this._data) !== JSON.stringify(this._previousStateData)
-    )
+  public isDirty (shallow = true): boolean {
+    return shallow ? !shallowEquals(this._data, this._previousStateData) : !deepEquals(this._data, this._previousStateData)
   }
 
   /**
@@ -358,8 +376,8 @@ export class Store {
   private executeListeners () {
     // Only fire listeners if data is dirty
     if (this.isDirty()) {
-      const previousState = this._previousStateData ? JSON.parse(JSON.stringify(deepClone(this._previousStateData), stringifyMapReplacer), stringifyMapReviver) : null
-      const currentState = this.getData() ? JSON.parse(JSON.stringify(deepClone(this.getData()), stringifyMapReplacer), stringifyMapReviver) : null
+      const previousState = this._previousStateData ? shallowClone(this._previousStateData) : null
+      const currentState = this.getData() ? shallowClone(this.getData()) : null
 
       this.stripInjectedValues(previousState)
       this.stripInjectedValues(currentState)
@@ -390,7 +408,7 @@ export class Store {
           this.stripInjectedValues(value)
         }
       }
-    } else if (propertyName && propertyName.startsWith('@state__')) {
+    } else if (propertyName && propertyName.startsWith(INJECT_PREFIX)) {
       delete parent[propertyName]
     } else if (data instanceof Object) {
       for(const property in data) {

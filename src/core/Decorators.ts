@@ -85,11 +85,13 @@ export function StoreAction (options: DecoratorOptions | null = null): Function 
  * to the store if it is created later. You can supply state as a parameter to ignore the singleton
  * but in general, these decorators are experimental and still "in progress"
  * 
+ * Note: Store Loaders cannot be used on observable stores (no load operation)
+ * 
  * @param store The name of the store to create a Loader on
  * @param name The name of this Loader. If not provided, the name of the function will be used
  * @returns Descriptor
  */
-export function StoreLoader (options: DecoratorOptions | null = null): Function {
+export function StoreLoader (options: DecoratorOptions): Function {
   return function getDecorator(target: any, property: string, descriptor: PropertyDescriptor) {
     if (options) {
       if (options.store instanceof StateStore) { 
@@ -99,8 +101,6 @@ export function StoreLoader (options: DecoratorOptions | null = null): Function 
       } else {
         StateSingleton.addLoader(options.store, options.name || property, descriptor.value)
       }
-    } else {
-      pushToPrototype(target, property, { type: ActionType.LOADER, callback: descriptor.value })
     }
     return target
   }

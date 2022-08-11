@@ -1,4 +1,25 @@
 /**
+ * Clone a provided object. This clone will be shallow:
+ * Parse(stringify)
+ * @param obj 
+ * @returns 
+ */
+export function shallowClone (obj: any): any {
+  if (obj) return JSON.parse(JSON.stringify(obj, stringifyMapReplacer), stringifyMapReviver)
+  else return null
+}
+
+/**
+ * Do a shallow equality check for two objects
+ * @param a 
+ * @param b 
+ * @returns 
+ */
+export function shallowEquals<T> (a: T, b: T): boolean {
+  return JSON.stringify(a, stringifyMapReplacer) === JSON.stringify(b, stringifyMapReplacer)
+}
+
+/**
  * Clone a provided object. Traverse child objects as well
  * This will also traverse Arrays and Maps
  * @param obj 
@@ -47,6 +68,32 @@ export function deepClone (obj: any): any {
   }
 
   throw new Error('Cannot clone object')
+}
+
+export function deepEquals (a: any, b: any): boolean {
+  if (typeof a !== typeof b) return false
+  else if (shallowEquals(a, b)) return true
+  else if (a instanceof Array && b instanceof Array) {
+    if (a.length !== b.length) return false
+    else {
+      for (let i = 0; i < a.length; i++) {
+        const result = deepEquals(a[i], b[i])
+        if (!result) return false
+      }
+      return true
+    }
+  } else if (a instanceof Map && b instanceof Map) {
+    if (a.size !== b.size) return false
+    let result = deepEquals(Array.from(a.keys()), Array.from(b.keys()))
+    if (!result) return false
+    return deepEquals(Array.from(a.values()), Array.from(b.values()))
+  } else if (a instanceof Object && b instanceof Object) {
+    for(const key in a) {
+      const result = Object.prototype.hasOwnProperty.call(b, key) && deepEquals(a[key], b[key])
+      if (!result) return false
+    }
+    return true
+  } else return a === b
 }
 
 // find a property value from a string path "param.1.my.other.2.param"
