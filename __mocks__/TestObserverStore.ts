@@ -1,4 +1,4 @@
-import { ChangeState, GenericDataStore, StoreAction, StoreListener } from "../lib"
+import { ChangeState, GenericDataStore, StateObserver, StoreAction, StoreListener } from "../lib"
 import { StoreTransformer } from "../lib/core/Decorators"
 
 class Employment {
@@ -67,9 +67,8 @@ export class TestStore {
       wage: 65.43
     }])
 
-    GenericDataStore.observableStore(this, {
-      name: 'employees',
-      isCachable: true
+    StateObserver.observableStore(this, {
+      name: 'employees'
     })
   }
 
@@ -99,14 +98,5 @@ export class TestStore {
     for (const employee of this.employees) {
       employee.employment.wage += employee.employment.wage * bumpPercent
     }
-  }
-
-  @StoreTransformer()
-  public getNames (data: TestStore): Array<string> {
-    const names: Array<string> = []
-    for (const employee of data.employees) {
-      names.push(employee.firstName + ' ' + employee.lastName)
-    }
-    return names
   }
 }

@@ -1,11 +1,29 @@
 /**
+ * Stringify with map replaced
+ * @param obj 
+ * @returns 
+ */
+export function stringify (obj: any): string {
+  return JSON.stringify(obj, stringifyMapReplacer)
+}
+
+/**
+ * Parse with map reviver
+ * @param string 
+ * @returns 
+ */
+export function parse (string: string): any {
+  return JSON.parse(string, stringifyMapReviver)
+}
+
+/**
  * Clone a provided object. This clone will be shallow:
  * Parse(stringify)
  * @param obj 
  * @returns 
  */
 export function shallowClone (obj: any): any {
-  if (obj) return JSON.parse(JSON.stringify(obj, stringifyMapReplacer), stringifyMapReviver)
+  if (obj) return parse(stringify(obj))
   else return null
 }
 
@@ -16,7 +34,7 @@ export function shallowClone (obj: any): any {
  * @returns 
  */
 export function shallowEquals<T> (a: T, b: T): boolean {
-  return JSON.stringify(a, stringifyMapReplacer) === JSON.stringify(b, stringifyMapReplacer)
+  return stringify(a) === stringify(b)
 }
 
 /**

@@ -32,6 +32,10 @@ export type StoreOptions = MakeOptional<{
   cachePrefix: string
 }, 'isCachable' | 'cacheTimeoutSeconds' | 'persistCache' | 'cachePrefix'>
 
+export type StateObserverOptions = {
+  name: string
+}
+
 /**
  * Decorator options when applying decorators to functions.
  * @param store The name of the store

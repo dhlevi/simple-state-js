@@ -1,7 +1,5 @@
 import { StateSingleton, GenericDataStore } from "../lib"
 import { ChangeState } from "../lib/core/Options"
-import { TestStore } from "../__mocks__/TestObserverStore"
-import { deepClone, deepEquals, shallowEquals } from "../lib/core/Util"
 
 // For some longer running tests, we'll want more than 5 seconds
 jest.setTimeout(20000)
@@ -249,56 +247,4 @@ test('Remove Store', () => {
 test('Clear Stores', () => {
   const result = StateSingleton.clearStores()
   expect(result).toBeTruthy()
-})
-
-test('Observable Store', async () => {
-  const observerClass = new TestStore()
-  const store = StateSingleton.findStore('employees')
-  let changes = 0
-  store?.createListener('changeCounter', () => {
-    console.log('Call changecounter')
-    changes++
-  })
-  expect(store).toBeDefined()
-
-  await observerClass.increaseWages(0.05)
-  expect(changes).toBe(3)
-
-  const names: Array<string> = await store?.execute('getNames')
-  expect(names).toBeDefined()
-  expect(names.length).toBe(3)
-
-  await observerClass.addResource()
-  await new Promise((r) => setTimeout(r, 5000))
-  expect(changes).toBe(4)
-})
-
-test('Deep Equals', () => {
-  expect(deepEquals(1, 1)).toBeTruthy()
-  expect(deepEquals(1, 2)).toBeFalsy()
-  expect(deepEquals("string", "anotherString")).toBeFalsy()
-  expect(deepEquals("string", "string")).toBeTruthy()
-  expect(deepEquals(new Date(10000000), new Date(10000000))).toBeTruthy()
-
-  const obj1 = {
-    param1: 'param',
-    param2: [{ a: '1', b: '2'}, { a: '3', b: '4'}],
-    param3: new Map<string, any>()
-  }
-
-  const obj2 = {
-    param2: (deepClone(obj1.param2) as Array<any>).reverse(),
-    param1: 'param',
-    param3: new Map<string, any>()
-  }
-
-  obj1.param3.set("test", { a: '1', b: '2'})
-  obj2.param3.set("test", { a: '1', b: '2'})
-
-  expect(shallowEquals(obj1, obj2)).toBeFalsy()
-  expect(deepEquals(obj1, obj2)).toBeFalsy()
-  obj2.param2.reverse()
-  expect(deepEquals(obj1, obj2)).toBeTruthy()
-  obj2.param3.set("test2", { a: '1', b: '2'})
-  expect(deepEquals(obj1, obj2)).toBeFalsy()
 })

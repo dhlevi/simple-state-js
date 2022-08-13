@@ -1,4 +1,5 @@
 import { State } from "./State"
+import { StateObserver } from "./StateObserver"
 import { Store } from "./Store"
 
 /**
@@ -110,8 +111,18 @@ export class StateSingleton {
    * add it here
    * @param store The store to add
    */
-  public static addStore(store: Store) {
+  public static addStore (store: Store) {
     StateSingleton.instance().addStore(store)
+  }
+
+  /**
+   * Add a state observer to the managed state. This is generaly executed automatically
+   * by the static observer factories, but you can manually create an observer and
+   * add it here
+   * @param observer The observer to add
+   */
+  public static addStateObserver (observer: StateObserver) {
+    StateSingleton.instance().addStateObserver(observer)
   }
 
   /**
@@ -119,8 +130,17 @@ export class StateSingleton {
    * @param name The name of the store
    * @returns The store that was found, or Undefined
    */
-  public static findStore(name: string): Store | undefined {
+  public static findStore (name: string): Store | undefined {
     return StateSingleton.instance().findStore(name)
+  }
+
+  /**
+   * Find and fetch an observer by name
+   * @param name The name of the observer
+   * @returns The observer that was found, or undefined
+   */
+  public static findStateObserver (name: string): StateObserver | undefined {
+    return StateSingleton.instance().findStateObserver(name)
   }
 
   /**
@@ -128,8 +148,17 @@ export class StateSingleton {
    * @param name The store to remove
    * @returns True if the store was removed
    */
-  public static removeStore(name: string): boolean {
+  public static removeStore (name: string): boolean {
     return StateSingleton.instance().removeStore(name)
+  }
+
+  /**
+   * Remove an observer from the managed state
+   * @param name The observer to remove
+   * @returns True if the observer was removed
+   */
+  public static removeStateObserver (name: string): boolean {
+    return StateSingleton.instance().removeStateObserver(name)
   }
 
   /**
@@ -139,5 +168,21 @@ export class StateSingleton {
    */
   public static clearStores (): boolean {
     return StateSingleton.instance().clearStores()
+  }
+
+  /**
+   * Clear and detach all observers
+   * @returns True if the observers were cleared
+   */
+  public static clearStateObservers (): boolean {
+    return StateSingleton.instance().clearObservers()
+  }
+
+  /**
+   * Flush the state entirely (Calls clearStores and clearStateObservers)
+   * @returns True if the state was cleared
+   */
+  public static clear(): boolean {
+    return StateSingleton.instance().clear()
   }
 }

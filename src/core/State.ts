@@ -1,4 +1,5 @@
 import { Action, ActionType } from "./Action"
+import { StateObserver } from "./StateObserver"
 import { Store } from "./Store"
 
 /**
@@ -6,6 +7,7 @@ import { Store } from "./Store"
  */
 export class State {
   private stores: Array<Store>
+  private observers: Array<StateObserver>
   private loaders: Map<string, Array<Action>>
   private listeners: Map<string, Array<Action>>
   private actions: Map<string, Array<Action>>
@@ -13,6 +15,7 @@ export class State {
 
   constructor () {
     this.stores = []
+    this.observers = []
     this.loaders = new Map<string, Array<Action>>()
     this.listeners = new Map<string, Array<Action>>()
     this.actions = new Map<string, Array<Action>>()
@@ -189,12 +192,29 @@ export class State {
   }
 
   /**
+   * Add a state observer
+   * @param observer The observer to add
+   */
+  public addStateObserver (observer: StateObserver) {
+    this.observers.push(observer)
+  }
+
+  /**
    * Find and fetch a store by name
    * @param name The name of the store
    * @returns The store that was found, or Undefined
    */
   public findStore(name: string): Store | undefined {
     return this.stores.find(s => s.name === name)
+  }
+
+  /**
+   * Find and fetch a state observer
+   * @param name 
+   * @returns 
+   */
+  public findStateObserver(name: string): StateObserver | undefined {
+    return this.observers.find(o => o.name === name)
   }
 
 /**
@@ -225,6 +245,28 @@ export class State {
   }
 
   /**
+   * Removes a state observer from the state monitor
+   * @param name The observer to remove
+   * @returns True if the observer was removed
+   */
+  public removeStateObserver (name: string): boolean {
+    try {
+      const observers = this.observers
+      const observer = observers.find(o=> o.name === name)
+      if (observer) {
+        const observerIndex = observers.indexOf(observer)
+        if (observerIndex > -1) {
+          observers.splice(observerIndex, 1);
+        }
+      }
+      return true
+    } catch (error) {
+      console.error(`Failed to remove observer: ${error}`)
+      return false
+    }
+  }
+
+  /**
    * Remove all stores, and unbound Loaders, Transformers, Listeners and Actions from the state
    * @returns True if the state has been cleared
    */
@@ -242,5 +284,22 @@ export class State {
       console.error(error)
       return false
     }
+  }
+
+  public clearObservers (): boolean {
+    try {
+      for (const observer of this.observers) {
+        observer.detach()
+      }
+      this.observers = []
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
+  public clear (): boolean {
+    return this.clearStores() && this.clearObservers()
   }
 }
