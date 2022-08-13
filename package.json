@@ -1,5 +1,5 @@
 {
-  "name": "state-manager",
+  "name": "simple-state-js",
   "version": "1.0.0",
   "description": "A simple state manager and state observer for Javascript or Typescript",
   "main": "lib/index.js",
