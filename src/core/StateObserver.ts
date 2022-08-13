@@ -1,16 +1,24 @@
-import { Action, ActionType, Executable } from "./Action"
+import { ActionType, Executable } from "./Action"
 import { StateSingleton } from "./StateSingleton"
-import { ChangeState, DecoratorDefinition, ExecutableOptions, StateObserverOptions, StoreOptions } from "./Options"
+import { ChangeState, DecoratorDefinition, StateObserverOptions } from "./Options"
 import { DECORATOR_KEY } from "./Decorators"
-import { deepClone, deepEquals, shallowClone, shallowEquals } from "./Util"
+import { deepClone, shallowClone } from "./Util"
 import { BaseStore } from "./Store"
 
 // The prefix added to injected getters/setters
 const INJECT_PREFIX = '@state__'
 
-export class StateObserver extends BaseStore {
+export class StateObserver<T> extends BaseStore {
   constructor (options: StateObserverOptions) {
     super(options.name)
+  }
+
+  public override getData (): T {
+    return super.getData() as T
+  }
+
+  public override setData (data: T) {
+    throw new Error('Cannot directly change State Observer Store data')
   }
 
   /**
@@ -26,13 +34,13 @@ export class StateObserver extends BaseStore {
    * @param options 
    * @returns 
    */
-   public static observableStore(targetObject: any, options: StateObserverOptions): StateObserver {
+   public static observableStore<T>(targetObject: T, options: StateObserverOptions): StateObserver<T> {
     StateSingleton.removeStateObserver(options.name)
-    const observer = new StateObserver(options)
+    const observer = new StateObserver<T>(options)
     StateSingleton.addStateObserver(observer)
     // inject actions onto target by scanning the prototypes
     try {
-      const decorators: Map<string, DecoratorDefinition> = targetObject[DECORATOR_KEY]
+      const decorators: Map<string, DecoratorDefinition> = (targetObject as any)[DECORATOR_KEY]
       if (decorators) {
         for (const entry of Array.from(decorators.entries())) {
           const key = entry[0]
@@ -40,10 +48,10 @@ export class StateObserver extends BaseStore {
           switch (value.type) {
             case ActionType.ACTION:
             case ActionType.INLINE_ACTION:
-              observer.createAction(key, value.callback, value.type === ActionType.INLINE_ACTION)
+              observer.createAction(key, value.callback!, value.type === ActionType.INLINE_ACTION)
             break
             case ActionType.LISTENER:
-              observer.createListener(key, value.callback)
+              observer.createListener(key, value.callback!)
             break
           }
         }
@@ -55,7 +63,8 @@ export class StateObserver extends BaseStore {
       console.log('Decorator and Observer injection could not be completed. State may be corrupt: ', error)
     }
 
-    observer.setData(targetObject)
+    observer._data= targetObject
+    observer._previousStateData = deepClone(targetObject)
 
     return observer
   }
@@ -76,7 +85,7 @@ export class StateObserver extends BaseStore {
    * @param targetKey 
    * @param observer 
    */
-  private injectMonitorSetters (targetObject: any, observer: StateObserver) {
+  private injectMonitorSetters (targetObject: any, observer: StateObserver<T>) {
     for(const key in targetObject) {
       if (targetObject[key] instanceof Map) {
         for (const entry of Array.from(targetObject[key].entries())) {
@@ -135,10 +144,6 @@ export class StateObserver extends BaseStore {
 
   private setPreviousData (previous: any) {
     this._previousStateData = previous
-  }
-
-  public detach () {
-    // unhook observables
   }
 
   protected executeListeners () {

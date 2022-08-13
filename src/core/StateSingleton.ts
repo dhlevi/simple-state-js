@@ -121,7 +121,7 @@ export class StateSingleton {
    * add it here
    * @param observer The observer to add
    */
-  public static addStateObserver (observer: StateObserver) {
+  public static addStateObserver<T> (observer: StateObserver<T>) {
     StateSingleton.instance().addStateObserver(observer)
   }
 
@@ -139,7 +139,7 @@ export class StateSingleton {
    * @param name The name of the observer
    * @returns The observer that was found, or undefined
    */
-  public static findStateObserver (name: string): StateObserver | undefined {
+  public static findStateObserver<T> (name: string): StateObserver<T> | undefined {
     return StateSingleton.instance().findStateObserver(name)
   }
 

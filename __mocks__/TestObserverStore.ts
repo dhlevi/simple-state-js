@@ -1,5 +1,4 @@
 import { ChangeState, GenericDataStore, StateObserver, StoreAction, StoreListener } from "../lib"
-import { StoreTransformer } from "../lib/core/Decorators"
 
 class Employment {
   job: string
@@ -67,7 +66,7 @@ export class TestStore {
       wage: 65.43
     }])
 
-    StateObserver.observableStore(this, {
+    StateObserver.observableStore<TestStore>(this, {
       name: 'employees'
     })
   }

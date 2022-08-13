@@ -22,7 +22,7 @@ test('Observable Store', async () => {
   expect(changes).toBe(4)
 
   const newObserverClass = new TestStore()
-  const reloadedStore = StateSingleton.findStateObserver('employees')
+  const reloadedStore = StateSingleton.findStateObserver<TestStore>('employees')
   // At this point, the store stored in the singleton has been replaced with the 
   // newObserverClass
   expect(reloadedStore).toBeDefined()

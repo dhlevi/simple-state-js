@@ -88,6 +88,12 @@ export function deepClone (obj: any): any {
   throw new Error('Cannot clone object')
 }
 
+/**
+ * Test objects for deep equality
+ * @param a Object A
+ * @param b Object B
+ * @returns True if equal
+ */
 export function deepEquals (a: any, b: any): boolean {
   if (typeof a !== typeof b) return false
   else if (shallowEquals(a, b)) return true
@@ -117,6 +123,12 @@ export function deepEquals (a: any, b: any): boolean {
 // find a property value from a string path "param.1.my.other.2.param"
 export const get = (d: any, path: any) => path.split('.').reduce((r: any, k: any) => r?.[k], d)
 
+/**
+ * Replacer for Map objects when using JSON.stringify
+ * @param _key 
+ * @param value 
+ * @returns 
+ */
 export function stringifyMapReplacer(_key: any, value: any) {
   if(value instanceof Map) {
     return {
@@ -128,6 +140,12 @@ export function stringifyMapReplacer(_key: any, value: any) {
   }
 }
 
+/**
+ * Reviver for Map objects when using JSON.parse, after stringify
+ * @param _key 
+ * @param value 
+ * @returns 
+ */
 export function stringifyMapReviver(_key: any, value: any) {
   if(typeof value === 'object' && value !== null) {
     if (value.dataType === 'Map') {

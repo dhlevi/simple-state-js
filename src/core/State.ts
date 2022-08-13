@@ -7,7 +7,7 @@ import { Store } from "./Store"
  */
 export class State {
   private stores: Array<Store>
-  private observers: Array<StateObserver>
+  private observers: Array<StateObserver<any>>
   private loaders: Map<string, Array<Action>>
   private listeners: Map<string, Array<Action>>
   private actions: Map<string, Array<Action>>
@@ -195,7 +195,7 @@ export class State {
    * Add a state observer
    * @param observer The observer to add
    */
-  public addStateObserver (observer: StateObserver) {
+  public addStateObserver<T> (observer: StateObserver<T>) {
     this.observers.push(observer)
   }
 
@@ -204,7 +204,7 @@ export class State {
    * @param name The name of the store
    * @returns The store that was found, or Undefined
    */
-  public findStore(name: string): Store | undefined {
+  public findStore (name: string): Store | undefined {
     return this.stores.find(s => s.name === name)
   }
 
@@ -213,7 +213,7 @@ export class State {
    * @param name 
    * @returns 
    */
-  public findStateObserver(name: string): StateObserver | undefined {
+  public findStateObserver<T> (name: string): StateObserver<T> | undefined {
     return this.observers.find(o => o.name === name)
   }
 
@@ -222,7 +222,7 @@ export class State {
    * @param name The store to remove
    * @returns True if the store was removed
    */
-  public removeStore(name: string): boolean {
+  public removeStore (name: string): boolean {
     try {
       const stores = this.stores
       const store = stores.find(s => s.name === name)
@@ -286,11 +286,12 @@ export class State {
     }
   }
 
+  /**
+   * Clear the observers from the state
+   * @returns True if observers were cleared from the state
+   */
   public clearObservers (): boolean {
     try {
-      for (const observer of this.observers) {
-        observer.detach()
-      }
       this.observers = []
       return true
     } catch (error) {
@@ -299,6 +300,10 @@ export class State {
     }
   }
 
+  /**
+   * Clear all stores and observers from the state
+   * @returns True if observers and stores were cleared from the state
+   */
   public clear (): boolean {
     return this.clearStores() && this.clearObservers()
   }
