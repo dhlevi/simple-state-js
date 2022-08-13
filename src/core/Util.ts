@@ -1,3 +1,4 @@
+/* tslint:disable:ban-types max-classes-per-file */
 /**
  * Stringify with map replaced
  * @param obj 
@@ -12,8 +13,8 @@ export function stringify (obj: any): string {
  * @param string 
  * @returns 
  */
-export function parse (string: string): any {
-  return JSON.parse(string, stringifyMapReviver)
+export function parseJsonString (jsonString: string): unknown {
+  return JSON.parse(jsonString, stringifyMapReviver)
 }
 
 /**
@@ -23,7 +24,7 @@ export function parse (string: string): any {
  * @returns 
  */
 export function shallowClone (obj: any): any {
-  if (obj) return parse(stringify(obj))
+  if (obj) return parseJsonString(stringify(obj))
   else return null
 }
 
@@ -108,13 +109,15 @@ export function deepEquals (a: any, b: any): boolean {
     }
   } else if (a instanceof Map && b instanceof Map) {
     if (a.size !== b.size) return false
-    let result = deepEquals(Array.from(a.keys()), Array.from(b.keys()))
+    const result = deepEquals(Array.from(a.keys()), Array.from(b.keys()))
     if (!result) return false
     return deepEquals(Array.from(a.values()), Array.from(b.values()))
   } else if (a instanceof Object && b instanceof Object) {
     for(const key in a) {
-      const result = Object.prototype.hasOwnProperty.call(b, key) && deepEquals(a[key], b[key])
-      if (!result) return false
+      if (a.hasOwnProperty(key)) {
+        const result = Object.prototype.hasOwnProperty.call(b, key) && deepEquals(a[key], b[key])
+        if (!result) return false
+      }
     }
     return true
   } else return a === b

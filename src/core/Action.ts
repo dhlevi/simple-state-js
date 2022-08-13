@@ -1,3 +1,5 @@
+/* tslint:disable:ban-types max-classes-per-file */
+
 /**
  * Action Types. When defining actions, use Loader, Transformer or Listener
  * Inline Action is a special type for observable stores, and shouldn't
@@ -34,9 +36,9 @@ export class Action {
  */
 export class Executable {
   readonly action: Action
-  readonly params: Array<any>
+  readonly params: any[]
 
-  private constructor (action: Action, ...params: Array<any>) {
+  private constructor (action: Action, ...params: any[]) {
     this.action = action
     this.params = params
   }
@@ -48,7 +50,7 @@ export class Executable {
    * @param params 
    * @returns 
    */
-  public static createExecutor (action: Action, ...params: Array<any>): Executable {
+  public static createExecutor (action: Action, ...params: any[]): Executable {
     return new Executable(action, ...params)
   }
 
@@ -60,9 +62,8 @@ export class Executable {
   public async execute (): Promise<any> {
     if (this.action.callback) {
       try {
-        return await this.action.callback.apply(this.action.callback, ...this.params)
+        return await this.action.callback.apply(this.action.callback, this.params)
       } catch (error) {
-        console.error(`Action ${this.action.name} execute failed: `, error)
         throw Error(error as string)
       }
     }

@@ -1,5 +1,7 @@
+/* tslint:disable:ban-types max-classes-per-file */
+
 import { ActionType } from "./Action"
-import { DecoratorDefinition, DecoratorOptions, StoreOptions } from "./Options"
+import { DecoratorDefinition, DecoratorOptions } from "./Options"
 import { StateSingleton } from "./StateSingleton"
 import { Store as StateStore } from "./Store"
 
@@ -112,7 +114,7 @@ export function StoreLoader (options: DecoratorOptions): Function {
  * to the store if it is created later. You can supply state as a parameter to ignore the singleton
  * but in general, these decorators are experimental and still "in progress"
  * 
-* Note: Store Transformers cannot be used on observable stores (no transform operation)
+ * Note: Store Transformers cannot be used on observable stores (no transform operation)
  * 
  * @param store The name of the store to create a Transformer on
  * @param name The name of this Transformer. If not provided, the name of the function will be used

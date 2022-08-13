@@ -1,4 +1,4 @@
-import { deepClone, deepEquals, shallowEquals, stringify, parse } from "../lib/core/Util"
+import { deepClone, deepEquals, shallowEquals, stringify, parseJsonString } from "../lib/core/Util"
 
 test('Stringify with map', () => {
   const mapObj = {
@@ -16,8 +16,8 @@ test('Stringify with map', () => {
   console.log('safe', safeStringify)
 
   expect(unsafeStringify).not.toEqual(safeStringify)
-  expect(parse(unsafeStringify)).not.toEqual(parse(safeStringify))
-  expect(deepEquals(mapObj, parse(safeStringify))).toBeTruthy()
+  expect(parseJsonString(unsafeStringify)).not.toEqual(parseJsonString(safeStringify))
+  expect(deepEquals(mapObj, parseJsonString(safeStringify))).toBeTruthy()
 })
 
 test('Deep Equals, Shallow Equals', () => {

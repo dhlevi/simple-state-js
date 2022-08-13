@@ -1,3 +1,4 @@
+/* tslint:disable:ban-types max-classes-per-file only-arrow-functions */
 import { ActionType, Executable } from "./Action"
 import { StateSingleton } from "./StateSingleton"
 import { ChangeState, DecoratorDefinition, StateObserverOptions } from "./Options"
@@ -59,8 +60,8 @@ export class StateObserver<T> extends BaseStore {
       // Inject setters on attributes for observable
       // listener execution on data change
       observer.injectMonitorSetters(targetObject, observer)
-    } catch (error) {
-      console.log('Decorator and Observer injection could not be completed. State may be corrupt: ', error)
+    } catch (_error) {
+      // ignore
     }
 
     observer._data= targetObject
@@ -156,7 +157,7 @@ export class StateObserver<T> extends BaseStore {
       this.stripInjectedValues(currentState)
 
       for (const listener of this._listeners) {
-        const changeState: ChangeState = { newState: currentState, previousState: previousState }
+        const changeState: ChangeState = { newState: currentState, previousState }
         Executable.createExecutor(listener, [changeState]).execute()
       }
     }
@@ -185,7 +186,9 @@ export class StateObserver<T> extends BaseStore {
       delete parent[propertyName]
     } else if (data instanceof Object) {
       for(const property in data) {
-        this.stripInjectedValues(data[property], property, data)
+        if (data.hasOwnProperty(property)) {
+          this.stripInjectedValues(data[property], property, data)
+        }
       }
     }
   }

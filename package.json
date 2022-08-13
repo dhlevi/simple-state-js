@@ -16,7 +16,10 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
-  "keywords": ["State", "ChangeDetection"],
+  "keywords": [
+    "State",
+    "ChangeDetection"
+  ],
   "author": "Dylan Hemsworth",
   "license": "ISC",
   "files": [

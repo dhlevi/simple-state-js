@@ -1,3 +1,4 @@
+/* tslint:disable:ban-types max-classes-per-file */
 import { State } from "./State"
 import { StateObserver } from "./StateObserver"
 import { Store } from "./Store"

@@ -1,7 +1,8 @@
+/* tslint:disable:ban-types max-classes-per-file */
 import { Action, ActionType, Executable } from "./Action"
 import { StateSingleton } from "./StateSingleton"
 import { ChangeState, ExecutableOptions, StoreOptions } from "./Options"
-import { deepClone, deepEquals, shallowClone, shallowEquals } from "./Util"
+import { deepClone, deepEquals, parseJsonString, shallowClone, shallowEquals } from "./Util"
 
 /**
  * Base definition for Stores and Observable Stores.
@@ -14,8 +15,8 @@ export class BaseStore {
   protected _data: any
   protected _previousStateData: any
 
-  protected _actions: Array<Action>
-  protected _listeners: Array<Action>
+  protected _actions: Action[]
+  protected _listeners: Action[]
 
   constructor (name: string) {
     this.name = name
@@ -59,13 +60,13 @@ export class BaseStore {
       const currentState = this.getData() ? shallowClone(this.getData()) : null
 
       for (const listener of this._listeners) {
-        const changeState: ChangeState = { newState: currentState, previousState: previousState }
+        const changeState: ChangeState = { newState: currentState, previousState }
         Executable.createExecutor(listener, [changeState]).execute()
       }
     }
   }
 
-  protected removeEventHandler(handlers: Array<Action>, name: string): boolean {
+  protected removeEventHandler(handlers: Action[], name: string): boolean {
     try {
       const handler = handlers.find(s => s.name === name)
       if (handler) {
@@ -76,7 +77,6 @@ export class BaseStore {
       }
       return true
     } catch (error) {
-      console.error(`Failed to remove Event Handler: ${error}`)
       return false
     }
   }
@@ -102,7 +102,6 @@ export class BaseStore {
 
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -128,7 +127,6 @@ export class BaseStore {
 
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -165,7 +163,7 @@ export class BaseStore {
     try {
       let action = this._actions.find(a => a.name === name)
       if (!action) {
-        action = new Action('no-op', () => { console.log(`Action ${name} not defined`) })
+        action = new Action('no-op', () => { /* empty */ })
       }
 
       let results = null
@@ -192,7 +190,7 @@ export class BaseStore {
    * @param actions A list of Executable definitions, inlucding the action name and params
    * @returns A promise that resolves to a list holding each action result
    */
-  public async chain (actions: Array<ExecutableOptions>): Promise<Array<any>> {
+  public async chain (actions: ExecutableOptions[]): Promise<any[]> {
     const results = []
     let lastResult: any = null
     let forwardResult = false
@@ -221,8 +219,8 @@ export class Store extends BaseStore {
   readonly persistCache: boolean
   private _cachePrefix: string
 
-  private _loaders: Array<Action>
-  private _transformers: Array<Action>
+  private _loaders: Action[]
+  private _transformers: Action[]
 
   private _isCached: boolean
   private _isLoading: boolean
@@ -255,15 +253,14 @@ export class Store extends BaseStore {
       const previousState = localStorage.getItem(`${this._cachePrefix}state-cache-${this.name}`)
       if (previousState) {
         try {
-          this._data = JSON.parse(previousState)
+          this._data = parseJsonString(previousState)
           const timeout = localStorage.getItem(`${this._cachePrefix}state-cache-${this.name}-timeout`)
-          if (timeout && Date.now() < parseInt(timeout)) {
+          if (timeout && Date.now() < parseInt(timeout, 10)) {
             this.isCached = true
             this._lastLoadTime = new Date()
             this._lastStoreTime = new Date()
           }
         } catch (error) {
-          console.warn(`Failed to load persisted state for Store ${this.name}`)
           localStorage.removeItem(`${this._cachePrefix}state-cache-${this.name}`)
           localStorage.removeItem(`${this._cachePrefix}state-cache-${this.name}-timeout`)
         }
@@ -346,7 +343,7 @@ export class Store extends BaseStore {
       const cacheTimeout = this.cacheTimeoutSeconds <= 0 ? Date.now() + 1000 * 60 * 60 * 24 : Date.now() + (this.cacheTimeoutSeconds * 1000)
       localStorage.setItem(`${this._cachePrefix}state-cache-${this.name}-timeout`, (cacheTimeout).toString())
     } catch (error) {
-      console.warn('Failed to write cache to local storage')
+      // ignore (could log out)
     }
   }
 
@@ -373,7 +370,6 @@ export class Store extends BaseStore {
 
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -400,7 +396,6 @@ export class Store extends BaseStore {
 
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -441,7 +436,7 @@ export class Store extends BaseStore {
     try {
       let action = this.findEventHandler(name)
       if (!action) {
-        action = new Action('no-op', () => { console.log(`Action ${name} not defined`) })
+        action = new Action('no-op', () => {  /* empty */  })
       }
 
       if (action.actionType === ActionType.TRANSFORMER) {
@@ -450,7 +445,7 @@ export class Store extends BaseStore {
 
       if (action.actionType === ActionType.LOADER) {
         if (this._isLoading || !this.isCacheStale()) {
-          action = new Action(`no-op`, () => { console.log(`Loader is currently ${this._isLoading ? 'Loading' : 'Cached'}. Load action ignored`)})
+          action = new Action(`no-op`, () => { /* empty */ })
         } else {
           this._isLoading = true
         }
@@ -460,7 +455,7 @@ export class Store extends BaseStore {
       if (action.actionType === ActionType.INLINE_ACTION) {
         results = await this.getData()[action.name](...args)
       } else {
-        results = await Executable.createExecutor(action, args).execute()
+        results = await Executable.createExecutor(action, ...args).execute()
       }
 
       if (action.actionType === ActionType.LOADER) {

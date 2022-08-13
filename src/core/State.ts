@@ -1,3 +1,4 @@
+/* tslint:disable:ban-types max-classes-per-file */
 import { Action, ActionType } from "./Action"
 import { StateObserver } from "./StateObserver"
 import { Store } from "./Store"
@@ -6,29 +7,29 @@ import { Store } from "./Store"
  * State structure for maintaining a consolidated state
  */
 export class State {
-  private stores: Array<Store>
-  private observers: Array<StateObserver<any>>
-  private loaders: Map<string, Array<Action>>
-  private listeners: Map<string, Array<Action>>
-  private actions: Map<string, Array<Action>>
-  private transformers: Map<string, Array<Action>>
+  private stores: Store[]
+  private observers: StateObserver<any>[]
+  private loaders: Map<string, Action[]>
+  private listeners: Map<string, Action[]>
+  private actions: Map<string, Action[]>
+  private transformers: Map<string, Action[]>
 
   constructor () {
     this.stores = []
     this.observers = []
-    this.loaders = new Map<string, Array<Action>>()
-    this.listeners = new Map<string, Array<Action>>()
-    this.actions = new Map<string, Array<Action>>()
-    this.transformers = new Map<string, Array<Action>>()
+    this.loaders = new Map<string, Action[]>()
+    this.listeners = new Map<string, Action[]>()
+    this.actions = new Map<string, Action[]>()
+    this.transformers = new Map<string, Action[]>()
   }
 
   /**
    * Add an Action Event Handler to the unbound state. Internal utility method used by
    * addListener/Loader/Action
    */
-  private addUnboundEventHandler (holder: Map<string, Array<Action>>, store: string, name: string, callback: Function, actionType: ActionType): boolean {
+  private addUnboundEventHandler (holder: Map<string, Action[]>, store: string, name: string, callback: Function, actionType: ActionType): boolean {
     try {
-      let handlers: Array<Action> | undefined = []
+      let handlers: Action[] | undefined = []
       // Fetch our handlers, or create an empty array if we don't have handlers
       // for this store yet
       if (holder.has(store)) {
@@ -56,7 +57,6 @@ export class State {
       
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -217,7 +217,7 @@ export class State {
     return this.observers.find(o => o.name === name)
   }
 
-/**
+  /**
    * Remove a store from the managed state
    * @param name The store to remove
    * @returns True if the store was removed
@@ -239,7 +239,6 @@ export class State {
       }
       return true
     } catch (error) {
-      console.error(`Failed to remove store: ${error}`)
       return false
     }
   }
@@ -261,7 +260,6 @@ export class State {
       }
       return true
     } catch (error) {
-      console.error(`Failed to remove observer: ${error}`)
       return false
     }
   }
@@ -274,14 +272,13 @@ export class State {
     try {
       const state = this
       state.stores = []
-      state.loaders = new Map<string, Array<Action>>()
-      state.actions = new Map<string, Array<Action>>()
-      state.listeners = new Map<string, Array<Action>>()
-      state.transformers = new Map<string, Array<Action>>()
+      state.loaders = new Map<string, Action[]>()
+      state.actions = new Map<string, Action[]>()
+      state.listeners = new Map<string, Action[]>()
+      state.transformers = new Map<string, Action[]>()
 
       return state.stores.length === 0 && state.loaders.size === 0 && state.actions.size === 0 && state.listeners.size === 0
     } catch (error) {
-      console.error(error)
       return false
     }
   }
@@ -295,7 +292,6 @@ export class State {
       this.observers = []
       return true
     } catch (error) {
-      console.error(error)
       return false
     }
   }

@@ -165,6 +165,7 @@ test('Create Transformer', async () => {
   const store = StateSingleton.findStore('testStore3') as GenericDataStore<number>
 
   store.createTransformer('transformer', (data: number, someArg: number) => {
+    console.log('SOMEARG', someArg)
     return (data * 2) + someArg
   })
 
