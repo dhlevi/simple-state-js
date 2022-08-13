@@ -1,7 +1,7 @@
 {
   "name": "state-manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple state manager and state observer for Javascript or Typescript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -16,20 +16,20 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["State", "ChangeDetection"],
+  "author": "Dylan Hemsworth",
   "license": "ISC",
   "files": [
     "lib/**/*"
   ],
   "devDependencies": {
-    "@types/jest": "^28.1.6",
-    "jest": "^28.1.3",
-    "jest-environment-jsdom": "^28.1.3",
-    "prettier": "^2.7.1",
-    "ts-jest": "^28.0.7",
-    "tslint": "^6.1.3",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.7.4"
+    "@types/jest": "28.1.6",
+    "jest": "28.1.3",
+    "jest-environment-jsdom": "28.1.3",
+    "prettier": "2.7.1",
+    "ts-jest": "28.0.7",
+    "tslint": "6.1.3",
+    "tslint-config-prettier": "1.18.0",
+    "typescript": "4.7.4"
   }
 }
